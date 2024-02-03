@@ -1,104 +1,87 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 class Program
 {
-
-    static string filePath = "C:\\Users\\hudol\\source\\repos\\WebAdaptive\\WebAdaptive\\files\\Lorem.txt";
-
-    static void Main()
+    static async Task Main()
     {
-        while (true)
+        // 1. System.IO
+        string filePath = "example.txt";
+        WriteToFile(filePath, "Hello, .NET Standard!");
+        string content = ReadFromFile(filePath);
+
+        Console.WriteLine($"Content read from file: {content}");
+
+        // 2. System.Net.Http
+        string url = "https://github.com/NEGAvv/WebAdaptive";
+        string webContent = await DownloadContentAsync(url);
+
+        Console.WriteLine($"Content from {url}:\n{webContent}");
+
+        // 3. System.Linq
+        List<int> numbers = new List<int> { 1, 2, 3, 4, 5 };
+        var squaredNumbers = numbers.Select(n => n * n);
+
+        Console.WriteLine("Squared numbers:");
+        foreach (var num in squaredNumbers)
         {
-            ShowMenu();
+            Console.WriteLine(num);
+        }
+
+        // 4. System.Threading.Tasks
+        Console.WriteLine("Start");
+        await DoSomethingAsync();
+        Console.WriteLine("End");
+
+        // 5. System.Text.Json
+        var person = new Person { Name = "Alina", Age = 19 };
+        string jsonString = SerializeToJson(person);
+
+        Console.WriteLine($"JSON representation:\n{jsonString}");
+    }
+
+    // 1. System.IO
+    static void WriteToFile(string filePath, string content)
+    {
+        File.WriteAllText(filePath, content);
+        Console.WriteLine($"Content written to {filePath}");
+    }
+
+    static string ReadFromFile(string filePath)
+    {
+        return File.ReadAllText(filePath);
+    }
+
+    // 2. System.Net.Http
+    static async Task<string> DownloadContentAsync(string url)
+    {
+        using (HttpClient client = new HttpClient())
+        {
+            return await client.GetStringAsync(url);
         }
     }
 
-    static void ShowMenu()
+    // 4. System.Threading.Tasks
+    static async Task DoSomethingAsync()
     {
-        Console.WriteLine("Menu:");
-        Console.WriteLine("1. Word count in the text");
-        Console.WriteLine("2. Calculate expression");
-        Console.WriteLine("3. Exit");
-
-        string choice = Console.ReadLine();
-
-        switch (choice)
-        {
-            case "1":
-                CountWordsInText();
-                break;
-
-            case "2":
-                PerformMathOperation();
-                break;
-
-            case "3":
-                Environment.Exit(0);
-                break;
-
-            default:
-                Console.WriteLine("Try again");
-                break;
-        }
-    }
-     
-    // task 1
-    static void CountWordsInText( )
-    {
-        
-
-        Console.WriteLine("Input amount of words:");
-        if (int.TryParse(Console.ReadLine(), out int wordCount))
-        {
-            try
-            {
-                string fileText = File.ReadAllText(filePath);
-                string[] words = fileText.Split(new char[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
-                if (wordCount <= words.Length)
-                {
-                    for (int i = 0; i < wordCount; i++)
-                    {
-                        Console.Write(words[i] + " ");
-                    }
-                    Console.WriteLine();
-                }
-                else
-                {
-                    Console.WriteLine($"Something wrong");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
-        }
-        else
-        {
-            Console.WriteLine("Error");
-        }
+        await Task.Delay(2000);
+        Console.WriteLine("Task completed after 2 seconds");
     }
 
-    // task 2
-    static void PerformMathOperation()
+    // 5. System.Text.Json
+    static string SerializeToJson<T>(T obj)
     {
-        Console.WriteLine("Input expression:");
-        string expression = Console.ReadLine();
-
-        try
-        {
-            double result = EvaluateMathExpression(expression);
-            Console.WriteLine($"Result: {result}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
-        }
+        return JsonSerializer.Serialize(obj);
     }
+}
 
-    static double EvaluateMathExpression(string expression)
-    {
-        return Convert.ToDouble(new System.Data.DataTable().Compute(expression, ""));
-    }
+public class Person
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
 }
