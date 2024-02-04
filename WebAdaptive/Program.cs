@@ -1,87 +1,85 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 class Program
 {
-    static async Task Main()
+        static void Main(string[] args)
     {
-        // 1. System.IO
-        string filePath = "example.txt";
-        WriteToFile(filePath, "Hello, .NET Standard!");
-        string content = ReadFromFile(filePath);
+        ThreadingDemo();
+        AsyncAwaitDemo();
+        GetQuoteAsync();
+    }
 
-        Console.WriteLine($"Content read from file: {content}");
 
-        // 2. System.Net.Http
-        string url = "https://github.com/NEGAvv/WebAdaptive";
-        string webContent = await DownloadContentAsync(url);
+    static void ThreadingDemo()
+    {
+        Console.WriteLine("ThreadingDemo started");
 
-        Console.WriteLine($"Content from {url}:\n{webContent}");
+        Thread thread1 = new Thread(new ThreadStart(ThreadMethod1));
+        Thread thread2 = new Thread(new ThreadStart(ThreadMethod2));
+        thread1.Start();
+        thread2.Start();
+    
+        Console.WriteLine("ThreadingDemo completed");
+    }
 
-        // 3. System.Linq
-        List<int> numbers = new List<int> { 1, 2, 3, 4, 5 };
-        var squaredNumbers = numbers.Select(n => n * n);
+    static void ThreadMethod1()
+    {
+        Console.WriteLine("Thread1 started");
+        Thread.Sleep(4000);
+        Console.WriteLine("Thread1 finished");
+    }
 
-        Console.WriteLine("Squared numbers:");
-        foreach (var num in squaredNumbers)
+    static void ThreadMethod2()
+    {
+        Console.WriteLine("Thread2 started");
+        Thread.Sleep(5000);
+        Console.WriteLine("Thread2 finished");
+    }
+
+
+    static async void AsyncAwaitDemo()
+    {
+        Console.WriteLine("AsyncAwaitDemo started");
+        int result = 0;
+        await Task.Run(() =>
         {
-            Console.WriteLine(num);
-        }
+            Console.WriteLine("Started first async op");
+            Thread.Sleep(3000);
+            for (int i = 1; i <= 5; i++)
+            {
+                result += i * i;
+            }
+            Console.WriteLine($"Result: {result}");
+            Console.WriteLine("Finished first async op");
+        });
 
-        // 4. System.Threading.Tasks
-        Console.WriteLine("Start");
-        await DoSomethingAsync();
-        Console.WriteLine("End");
+        result = 0;
 
-        // 5. System.Text.Json
-        var person = new Person { Name = "Alina", Age = 19 };
-        string jsonString = SerializeToJson(person);
-
-        Console.WriteLine($"JSON representation:\n{jsonString}");
-    }
-
-    // 1. System.IO
-    static void WriteToFile(string filePath, string content)
-    {
-        File.WriteAllText(filePath, content);
-        Console.WriteLine($"Content written to {filePath}");
-    }
-
-    static string ReadFromFile(string filePath)
-    {
-        return File.ReadAllText(filePath);
-    }
-
-    // 2. System.Net.Http
-    static async Task<string> DownloadContentAsync(string url)
-    {
-        using (HttpClient client = new HttpClient())
+        await Task.Run(() =>
         {
-            return await client.GetStringAsync(url);
-        }
+            Console.WriteLine("Started second async op");
+            Thread.Sleep(4000);
+            for (int i = 1; i <= 5; i++)
+            {
+                result = i * i;
+                Console.WriteLine(result);
+            }
+            Console.WriteLine("Finished second async op");
+        });
+
+        Console.WriteLine("AsyncAwaitDemo completed");
     }
 
-    // 4. System.Threading.Tasks
-    static async Task DoSomethingAsync()
+    static async void GetQuoteAsync()
     {
-        await Task.Delay(2000);
-        Console.WriteLine("Task completed after 2 seconds");
+        Console.WriteLine("GetQuoteAsync started");
+        HttpClient client = new HttpClient();
+        string apiURL = "https://api.quotable.io/random";
+        string data = await client.GetStringAsync(apiURL);
+        Console.WriteLine($"Data from GetQuoteAsync: {data}");
+        Console.WriteLine("GetQuoteAsync completed");
+       
     }
-
-    // 5. System.Text.Json
-    static string SerializeToJson<T>(T obj)
-    {
-        return JsonSerializer.Serialize(obj);
-    }
-}
-
-public class Person
-{
-    public string Name { get; set; }
-    public int Age { get; set; }
 }
