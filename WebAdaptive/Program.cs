@@ -1,85 +1,42 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using WebAdaptive.Classes;
 
 class Program
 {
         static void Main(string[] args)
     {
-        ThreadingDemo();
-        AsyncAwaitDemo();
-        GetQuoteAsync();
-    }
+        Coffee coffee1 = new Coffee(1, "Latte", false, 3, 'S');
+        Coffee coffee2 = new Coffee(2, "Cappuccino", false, 3, 'M');
 
+        Type coffeClassType = typeof(Coffee);
+        TypeInfo coffeeClassTypeInfo = coffeClassType.GetTypeInfo();
 
-    static void ThreadingDemo()
-    {
-        Console.WriteLine("ThreadingDemo started");
+        Console.WriteLine($"Type Name: {coffeClassType.Name}");
+        Console.WriteLine($"Is Pulic: {coffeeClassTypeInfo.IsPublic}");
+        Console.WriteLine($"Is Class: {coffeeClassTypeInfo.IsClass}");
 
-        Thread thread1 = new Thread(new ThreadStart(ThreadMethod1));
-        Thread thread2 = new Thread(new ThreadStart(ThreadMethod2));
-        thread1.Start();
-        thread2.Start();
-    
-        Console.WriteLine("ThreadingDemo completed");
-    }
-
-    static void ThreadMethod1()
-    {
-        Console.WriteLine("Thread1 started");
-        Thread.Sleep(4000);
-        Console.WriteLine("Thread1 finished");
-    }
-
-    static void ThreadMethod2()
-    {
-        Console.WriteLine("Thread2 started");
-        Thread.Sleep(5000);
-        Console.WriteLine("Thread2 finished");
-    }
-
-
-    static async void AsyncAwaitDemo()
-    {
-        Console.WriteLine("AsyncAwaitDemo started");
-        int result = 0;
-        await Task.Run(() =>
+        Console.WriteLine( "------------------------");
+        foreach (MemberInfo member in coffeeClassTypeInfo.GetMembers())
         {
-            Console.WriteLine("Started first async op");
-            Thread.Sleep(3000);
-            for (int i = 1; i <= 5; i++)
-            {
-                result += i * i;
-            }
-            Console.WriteLine($"Result: {result}");
-            Console.WriteLine("Finished first async op");
-        });
+            Console.WriteLine($"Name: {member.Name}, Type: {member.MemberType} ");
+        }
 
-        result = 0;
-
-        await Task.Run(() =>
+        Console.WriteLine("------------------------");
+        foreach (FieldInfo fieldInfo in coffeeClassTypeInfo.DeclaredFields)
         {
-            Console.WriteLine("Started second async op");
-            Thread.Sleep(4000);
-            for (int i = 1; i <= 5; i++)
-            {
-                result = i * i;
-                Console.WriteLine(result);
-            }
-            Console.WriteLine("Finished second async op");
-        });
+            Console.WriteLine($"Name: {fieldInfo.Name}, Attributes: ({fieldInfo.Attributes}), FieldType: {fieldInfo.FieldType}");
+        }
 
-        Console.WriteLine("AsyncAwaitDemo completed");
-    }
-
-    static async void GetQuoteAsync()
-    {
-        Console.WriteLine("GetQuoteAsync started");
-        HttpClient client = new HttpClient();
-        string apiURL = "https://api.quotable.io/random";
-        string data = await client.GetStringAsync(apiURL);
-        Console.WriteLine($"Data from GetQuoteAsync: {data}");
-        Console.WriteLine("GetQuoteAsync completed");
-       
+        Console.WriteLine("------------------------");
+        foreach (MethodInfo methodInfo in coffeeClassTypeInfo.DeclaredMethods)
+        {
+            Console.WriteLine($"Name: {methodInfo.Name}, MethodType: {methodInfo.ReturnType}");
+        }
+        Console.WriteLine("------------------------");
+        MethodInfo method = typeof(Coffee).GetMethod("ShowFullInfo");
+        method.Invoke(coffee1, null);
     }
 }
